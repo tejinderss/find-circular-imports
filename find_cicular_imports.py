@@ -24,6 +24,8 @@ def check_circular_imports(path, prefix):
         with open(pyf, 'r') as f:
             for line in f.read().splitlines():
                 matchs = pattern.findall(line)
+                if not matchs:
+                    continue
                 modules_names = [m[1] for m in matchs]
                 relative_import_modules[pyf.stem] = modules_names
 
