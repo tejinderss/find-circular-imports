@@ -21,13 +21,11 @@ def check_circular_imports(path, prefix):
     pattern = re.compile(
         r'(from {0} import )?(\w+),?[\s+]?(as\s\w+)?'.format(prefix), re.IGNORECASE)
     for pyf in python_files_paths:
-        import_pattern = 'from {0} import '.format(prefix)
         with open(pyf, 'r') as f:
             for line in f.read().splitlines():
-                if line.startswith(import_pattern):
-                    matchs = pattern.findall(line)
-                    modules_names = [m[1] for m in matchs]
-                    relative_import_modules[pyf.stem].extend(modules_names)
+                matchs = pattern.findall(line)
+                modules_names = [m[1] for m in matchs]
+                relative_import_modules[pyf.stem].extend(modules_names)
 
     for module, next_module in combinations(relative_import_modules.keys(), 2):
         module_modules = relative_import_modules[module]
