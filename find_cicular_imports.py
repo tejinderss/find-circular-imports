@@ -1,6 +1,5 @@
 import re
 
-from collections import defaultdict
 from itertools import combinations
 
 import click
@@ -17,15 +16,16 @@ from unipath import Path, FILES
 def check_circular_imports(path, prefix):
     path = Path(path)
     python_files_paths = path.listdir(filter=FILES, pattern='*.py')
-    relative_import_modules = defaultdict(list)
+    relative_import_modules = {}
     pattern = re.compile(
-        r'(from {0} import )?(\w+),?[\s+]?(as\s\w+)?'.format(prefix), re.IGNORECASE)
+        r'(from {0} import )?(\w+),?[\s+]?(as\s\w+)?'.format(prefix),
+        re.IGNORECASE)
     for pyf in python_files_paths:
         with open(pyf, 'r') as f:
             for line in f.read().splitlines():
                 matchs = pattern.findall(line)
                 modules_names = [m[1] for m in matchs]
-                relative_import_modules[pyf.stem].extend(modules_names)
+                relative_import_modules[pyf.stem] = modules_names
 
     for module, next_module in combinations(relative_import_modules.keys(), 2):
         module_modules = relative_import_modules[module]
