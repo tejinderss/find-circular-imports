@@ -1,3 +1,5 @@
+import re
+
 from collections import defaultdict
 from itertools import combinations
 
@@ -16,19 +18,22 @@ def check_circular_imports(path, prefix):
     path = Path(path)
     python_files_paths = path.listdir(filter=FILES, pattern='*.py')
     relative_import_modules = defaultdict(list)
+    pattern = re.compile(
+        r'(from {0} import )?(\w+),?[\s+]?(as\s\w+)?'.format(prefix), re.IGNORECASE)
     for pyf in python_files_paths:
         import_pattern = 'from {0} import '.format(prefix)
         with open(pyf, 'r') as f:
             for line in f.read().splitlines():
                 if line.startswith(import_pattern):
-                    modules_names = line[len(import_pattern):].replace(" ", "").split(',')
+                    matchs = pattern.findall(line)
+                    modules_names = [m[1] for m in matchs]
                     relative_import_modules[pyf.stem].extend(modules_names)
 
     for module, next_module in combinations(relative_import_modules.keys(), 2):
         module_modules = relative_import_modules[module]
         next_module_modules = relative_import_modules[next_module]
         if module.name in next_module_modules and next_module.name in module_modules:
-            print "Circular imports in modulse {0} and {1}".format(
+            print "Circular imports in modules {0} and {1}".format(
                 module, next_module)
 
 
